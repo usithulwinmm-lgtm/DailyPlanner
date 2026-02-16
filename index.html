@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Task Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Professional Planner</h1>
+            <button id="darkModeToggle">🌙 Dark Mode</button>
+        </div>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Task များကို ရှာဖွေရန်..." onkeyup="searchTasks()">
+            <button onclick="exportToPDF()" class="export-btn">📄 Export PDF</button>
+        </div>
+
+        <div class="input-section">
+            <textarea id="taskInput" placeholder="ဒီမှာ စာရေးပါ ဒါမှမဟုတ် အသံနဲ့ ပြောပါ..."></textarea>
+            <div class="buttons">
+                <button id="startBtn" class="voice-btn">🎤 အသံနဲ့ပြောမယ်</button>
+                <input type="date" id="taskDeadline">
+                <select id="taskCategory">
+                    <option value="daily">Daily (တစ်နေ့တာ)</option>
+                    <option value="weekly">Weekly (တစ်ပတ်စာ)</option>
+                    <option value="monthly">Monthly (တစ်လတာ)</option>
+                    <option value="yearly">Yearly (တစ်နှစ်စာ)</option>
+                </select>
+                <button id="addBtn" class="add-btn full-width-mobile">Add Task</button>
+            </div>
+        </div>
+
+        <div class="category-filters" style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <button onclick="filterCategory('all')" class="filter-btn">All</button>
+    <button onclick="filterCategory('daily')" class="filter-btn">Daily</button>
+    <button onclick="filterCategory('weekly')" class="filter-btn">Weekly</button>
+    <button onclick="filterCategory('monthly')" class="filter-btn">Monthly</button>
+    <button onclick="filterCategory('yearly')" class="filter-btn">Yearly</button>
+</div>
+
+       <div class="task-board">
+    <div class="column-row" id="daily" style="display: block;">
+        <h2>📅 နေ့စဉ် (Daily)</h2>
+        <div class="progress-container"><div id="dailyProgress" class="progress-bar"></div></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th>Description</th>
+                        <th style="width: 100px;">Deadline</th>
+                        <th style="width: 80px;">Status</th>
+                        <th>Remark</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="column-row" id="weekly" style="display: none;">
+    <h2>📅 အပတ်စဉ် (Weekly)</h2>
+    <div class="progress-container"><div id="weeklyProgress" class="progress-bar"></div></div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">No.</th>
+                    <th>Description</th>
+                    <th style="width: 100px;">Deadline</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Remark</th>
+                    <th style="width: 100px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="weeklyList"></tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="column-row" id="monthly" style="display: none;">
+        <h2>🗓️ တစ်လတာ (Monthly)</h2>
+        <div class="progress-container"><div id="monthlyProgress" class="progress-bar"></div></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th>Description</th>
+                        <th style="width: 100px;">Deadline</th>
+                        <th style="width: 80px;">Status</th>
+                        <th>Remark</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="monthlyList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="column-row" id="yearly" style="display: none;">
+        <h2>🌟 တစ်နှစ်စာ (Yearly)</h2>
+        <div class="progress-container"><div id="yearlyProgress" class="progress-bar"></div></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No.</th>
+                        <th>Description</th>
+                        <th style="width: 100px;">Deadline</th>
+                        <th style="width: 80px;">Status</th>
+                        <th>Remark</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="yearlyList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<button onclick="backupTasks()" class="filter-btn" style="background: #27ae60;">💾 Backup</button>
+<button onclick="document.getElementById('importFile').click()" class="filter-btn" style="background: #e67e22;">📂 Restore</button>
+<input type="file" id="importFile" style="display:none" onchange="restoreTasks(event)">
+
+<div id="toast">စာသားကို ဤနေရာတွင် ပြမည်</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

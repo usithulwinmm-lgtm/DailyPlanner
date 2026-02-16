@@ -1,0 +1,430 @@
+:root {
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-color: #333;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-color: #f1f1f1;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: 0.3s;
+    font-family: sans-serif;
+    display: flex; justify-content: center; padding: 20px;
+}
+
+.container {
+    width: 95%; max-width: 1100px;
+    background: var(--card-bg);
+    padding: 30px; border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; }
+
+.search-section { display: flex; gap: 10px; margin: 20px 0; }
+#searchInput { flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+
+.input-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.task-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.column { background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; min-height: 400px; }
+li { 
+    background: var(--card-bg); 
+    padding: 12px; 
+    margin-bottom: 10px; 
+    border-radius: 8px; 
+    cursor: grab; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    
+    /* စာသားအရှည်ကြီးဖြစ်ပါက အလိုအလျောက် အောက်တစ်ကြောင်းဆင်းရန် */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    word-break: break-word; /* စာလုံးအရှည်ကြီးတွေကို ဖြတ်ချပေးသည် */
+    overflow-wrap: break-word;
+}
+
+li div {
+    flex: 1; /* စာသားကို နေရာအပြည့်ယူစေပြီး ဖျက်တဲ့ခလုတ်ကို ဘေးပို့ထားမည် */
+    padding-right: 10px;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.task-actions span:hover {
+    transform: scale(1.2);
+    transition: 0.2s;
+}
+
+/* Modal နောက်ခံ */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5); /* နောက်ခံမှောင်ရန် */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Board ကို တစ်ကြောင်းချင်းစီ ဖြစ်အောင် လုပ်မယ် */
+.task-board {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.column-row {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Table Styling */
+.table-container {
+    overflow-x: auto; /* ဖုန်းနဲ့ကြည့်ရင် Scroll ဆွဲလို့ရအောင် */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: rgba(0,0,0,0.05);
+    font-weight: bold;
+}
+
+body.dark-mode th {
+    background-color: #3d3d3d;
+}
+
+/* Checkbox size */
+.status-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Done ဖြစ်သွားရင် စာသားကို ဖြတ်ခြစ်မယ် */
+.completed-task {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Table Column AutoFit ဖြစ်စေရန် */
+table {
+    table-layout: auto; /* Content အလိုက် အကျယ်ချိန်ပေးမည် */
+    width: 100%;
+}
+
+/* Edit လုပ်နေစဉ် Table Cell ပုံစံ */
+td[contenteditable="true"] {
+    background-color: rgba(46, 204, 113, 0.1);
+    border: 2px solid #2ecc71;
+    outline: none;
+    padding: 10px;
+}
+
+/* Filter ခလုတ်များ ပုံစံ */
+.filter-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #34495e;
+    color: white;
+    transition: 0.3s;
+}
+
+.filter-btn:hover { background: #2c3e50; }
+.filter-btn.active { background: #3498db; }
+
+/* Toast Notification */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 2000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    background-color: #eee;
+    border-radius: 10px;
+    margin: 10px 0 20px 0;
+    height: 10px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #2ecc71;
+    width: 0%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.deadline-urgent {
+    color: #e74c3c !important;
+    font-weight: bold;
+}
+
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+.deadline-text { font-size: 12px; color: #ff4757; display: block; margin-top: 5px; }
+.export-btn { background: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+
+:root {
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --primary-color: #3498db;
+    --accent-color: #2ecc71;
+    --danger-color: #e74c3c;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-color: #f1f1f1;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: 0.3s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex; 
+    justify-content: center; 
+    padding: 10px; /* Mobile မှာ ဘေးဘောင်အရမ်းမကပ်စေရန် */
+    margin: 0;
+}
+
+.container {
+    width: 100%; 
+    max-width: 1100px;
+    background: var(--card-bg);
+    padding: 20px; 
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+/* --- Header Section --- */
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; /* ဖုန်းမှာ ခလုတ်အောက်ဆင်းရန် */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.header h1 { font-size: 1.5rem; margin: 0; }
+
+/* --- Search & Export Section --- */
+.search-section { 
+    display: flex; 
+    gap: 10px; 
+    margin: 20px 0; 
+}
+#searchInput { 
+    flex-grow: 1; 
+    padding: 12px; 
+    border-radius: 8px; 
+    border: 1px solid #ddd; 
+    font-size: 16px; /* Mobile Zoom မဖြစ်အောင် */
+}
+
+/* --- Input Section --- */
+.input-section { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    margin-bottom: 25px; 
+    background: rgba(0,0,0,0.02);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#taskInput {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.buttons { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+    gap: 10px; 
+}
+
+button, input[type="date"], select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-btn { background: var(--accent-color); color: white; border: none; font-weight: bold; }
+.voice-btn { background: var(--primary-color); color: white; border: none; }
+
+/* --- Category Filters --- */
+.category-filters {
+    display: flex;
+    overflow-x: auto; /* ဖုန်းမှာ filter များပါက ဘေးတိုက်ရွှေ့ကြည့်နိုင်ရန် */
+    padding-bottom: 5px;
+    gap: 8px;
+    scrollbar-width: none; /* Firefox */
+}
+.category-filters::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.filter-btn {
+    white-space: nowrap; /* စာသားအောက်မဆင်းစေရန် */
+    flex-shrink: 0;
+}
+
+/* --- Table & Dashboard --- */
+.task-board {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.column-row {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.table-container {
+    overflow-x: auto; /* Table အရှည်ကြီးဖြစ်ပါက ဘေးတိုက်ရွှေ့ကြည့်ရန် */
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 600px; /* Table ပုံစံမပျက်အောင် အနည်းဆုံးအကျယ်သတ်မှတ် */
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+body.dark-mode th, body.dark-mode td { border-bottom: 1px solid #444; }
+
+/* --- Progress Bar --- */
+.progress-container {
+    width: 100%;
+    background-color: #eee;
+    border-radius: 10px;
+    height: 8px;
+    margin: 10px 0 20px;
+}
+
+/* --- Responsive Media Queries --- */
+/* --- Responsive Media Queries --- */
+
+/* Tablet & Mobile Layout (768px အောက်) */
+@media (max-width: 768px) {
+    .container { padding: 15px; }
+    
+    .header h1 { font-size: 1.2rem; }
+
+    /* ခလုတ်များကို စီစဉ်ခြင်း */
+    .buttons {
+        display: grid;
+        /* အပေါ်ကွက်မှာ အသံနဲ့ရက်စွဲ၊ အောက်ကွက်မှာ Category နဲ့ Add Task ကို ဘေးချင်းယှဉ်ပြမယ် */
+        grid-template-columns: 1fr 1fr; 
+        gap: 10px;
+    }
+
+    /* အသံနဲ့ပြောမယ် ခလုတ်ကို အပေါ်ဆုံးမှာ အပြည့်ထားချင်ရင် */
+    #startBtn {
+        grid-column: span 2;
+    }
+}
+@media (max-width: 480px) {
+    /* ခလုတ်များရှိသော နေရာကို Flexbox ပြောင်းလဲခြင်း */
+    .buttons {
+        display: flex;
+        flex-wrap: wrap; /* တစ်ကြောင်းတည်းမှာ မဆံ့ရင် အောက်ဆင်းဖို့ */
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    /* ခလုတ်တစ်ခုချင်းစီကို ၅၀% ထက် နည်းနည်းလျော့ပြီး ယူခိုင်းတာပါ (gap အတွက် နေရာချန်ရန်) */
+    /* calc(50% - 5px) က တစ်ကြောင်းမှာ နှစ်ခု ကွက်တိ ဖြစ်စေပါတယ် */
+    #startBtn, #taskDeadline, #taskCategory, #addBtn {
+        flex: 0 0 calc(50% - 5px);
+        width: calc(50% - 5px);
+        margin: 0;
+        box-sizing: border-box;
+        padding: 12px 5px; /* စာသားတွေ မဆံ့မှာစိုးလို့ ဘေး padding နည်းနည်းလျှော့ထားတယ် */
+        font-size: 13px;   /* ဖုန်းမှာ စာသားမလျှံအောင် font ကို နည်းနည်းသေးထားတယ် */
+    }
+
+    /* Search နဲ့ Export အတွက် */
+    .search-section {
+        flex-direction: column;
+    }
+    .export-btn {
+        width: 100%;
+    }
+}
+
+/* Task Completion & Status */
+.completed-task { text-decoration: line-through; opacity: 0.5; }
+.deadline-urgent { color: var(--danger-color) !important; font-weight: bold; }
+
+/* Toast */
+#toast {
+    width: 80%;
+    max-width: 300px;
+}
+
