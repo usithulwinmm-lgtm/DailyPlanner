@@ -16,71 +16,51 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 
 if (SpeechRecognition) {
     const recognition = new SpeechRecognition();
-    recognition.lang = 'my-MM'; 
+    recognition.lang = 'my-MM'; // မြန်မာဘာသာစကား သတ်မှတ်ခြင်း
     recognition.interimResults = false;
-    recognition.continuous = true; // မရပ်မချင်း ဆက်တိုက်နားထောင်ရန်
-
-    let isListening = false;
 
     startBtn.onclick = () => {
-        if (!isListening) {
-            recognition.start();
-            isListening = true;
-            startBtn.innerText = "🛑 ရပ်တန့်မည်";
-            startBtn.style.background = "#ff4757";
-            showToast("စတင်နားထောင်နေပါပြီ... ပြောလိုသည်များကို ဆက်တိုက်ပြောနိုင်ပါသည်။");
-        } else {
-            recognition.stop();
-            isListening = false;
-            startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-            startBtn.style.background = "#3498db";
-        }
+        recognition.start();
+        startBtn.innerText = "Listening... (နားထောင်နေသည်)";
+        startBtn.style.background = "#ff4757";
     };
 
     recognition.onresult = (event) => {
-        const deadline = document.getElementById('taskDeadline').value; //
-        const category = document.getElementById('taskCategory').value; //
+        const transcript = event.results[0][0].transcript;
+        taskInput.value = transcript;
+        startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
+        startBtn.style.background = "#3498db";
         
-        // နောက်ဆုံးပြောလိုက်တဲ့ စာသားကို ယူခြင်း
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                const transcript = event.results[i][0].transcript.trim();
-                
-                if (transcript !== "") {
-                    // Task အဖြစ် သိမ်းဆည်းခြင်း
-                    const task = {
-                        id: "task-" + Date.now() + i, // Unique ID ဖြစ်စေရန် i ပေါင်းထည့်ခြင်း
-                        text: transcript,
-                        deadline: deadline,
-                        category: category,
-                        completed: false,
-                        remark: ""
-                    };
+        // --- အသံပြောပြီးတာနဲ့ Task ထဲ တန်းထည့်မည့် Logic ---
+        const deadline = document.getElementById('taskDeadline').value;
+        const category = document.getElementById('taskCategory').value;
 
-                    saveTask(task); //
-                    renderAllTasks(); //
-                    showToast(`"${transcript}" ကို ထည့်သွင်းပြီးပါပြီ။`);
-                }
-            }
+        if (transcript.trim() !== "") {
+            const task = {
+                id: "task-" + Date.now(),
+                text: transcript,
+                deadline: deadline,
+                category: category,
+                completed: false,
+                remark: ""
+            };
+
+            saveTask(task);
+            renderAllTasks();
+            showToast("Task အသစ်ကို အသံဖြင့် ထည့်သွင်းပြီးပါပြီ။");
+            taskInput.value = ""; // Input ကို ပြန်ရှင်းထုတ်မယ်
         }
     };
 
     recognition.onerror = (event) => {
-        console.error("Speech error:", event.error);
-        isListening = false;
+        console.error("Speech recognition error:", event.error);
         startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-        startBtn.style.background = "#3498db";
+        alert("အသံဖမ်းယူမှု အဆင်မပြေပါ။ ပြန်ကြိုးစားကြည့်ပါ။");
     };
 
     recognition.onend = () => {
-        // isListening က true ဖြစ်နေသေးရင် (User က ရပ်တန့်မည် ခလုတ်မနှိပ်သေးရင်) ပြန်စမယ်
-        if (isListening) {
-            try {
-                recognition.start();
-            } catch (e) {
-                console.log("Recognition is already started or restarting...");
-            }
-        }
+        startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
+        startBtn.style.background = "#3498db";
     };
 } else {
     startBtn.style.display = "none"; // Browser က support မလုပ်ရင် ခလုတ်ဖျောက်ထားမယ်
@@ -328,19 +308,6 @@ window.onload = () => {
 
     renderAllTasks();
     checkReminders();
-
-    // Microphone Permission ကို ကြိုတင်တောင်းထားခြင်း
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function(stream) {
-            console.log("Microphone access granted.");
-            // Stream ကို ပြန်ပိတ်ထားမယ် (နားထောင်တာ မဟုတ်ဘဲ Permission ယူရုံသက်သက်)
-            stream.getTracks().forEach(track => track.stop());
-        })
-        .catch(function(err) {
-            console.log("Microphone access denied: " + err);
-        });
-    }
 };
 
 function renderAllTasks() {
