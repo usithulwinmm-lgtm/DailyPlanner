@@ -16,51 +16,65 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 
 if (SpeechRecognition) {
     const recognition = new SpeechRecognition();
-    recognition.lang = 'my-MM'; // မြန်မာဘာသာစကား သတ်မှတ်ခြင်း
+    recognition.lang = 'my-MM'; 
     recognition.interimResults = false;
+    recognition.continuous = true; // မရပ်မချင်း ဆက်တိုက်နားထောင်ရန်
+
+    let isListening = false;
 
     startBtn.onclick = () => {
-        recognition.start();
-        startBtn.innerText = "Listening... (နားထောင်နေသည်)";
-        startBtn.style.background = "#ff4757";
+        if (!isListening) {
+            recognition.start();
+            isListening = true;
+            startBtn.innerText = "🛑 ရပ်တန့်မည်";
+            startBtn.style.background = "#ff4757";
+            showToast("စတင်နားထောင်နေပါပြီ... ပြောလိုသည်များကို ဆက်တိုက်ပြောနိုင်ပါသည်။");
+        } else {
+            recognition.stop();
+            isListening = false;
+            startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
+            startBtn.style.background = "#3498db";
+        }
     };
 
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        taskInput.value = transcript;
-        startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-        startBtn.style.background = "#3498db";
+        const deadline = document.getElementById('taskDeadline').value; //
+        const category = document.getElementById('taskCategory').value; //
         
-        // --- အသံပြောပြီးတာနဲ့ Task ထဲ တန်းထည့်မည့် Logic ---
-        const deadline = document.getElementById('taskDeadline').value;
-        const category = document.getElementById('taskCategory').value;
+        // နောက်ဆုံးပြောလိုက်တဲ့ စာသားကို ယူခြင်း
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                const transcript = event.results[i][0].transcript.trim();
+                
+                if (transcript !== "") {
+                    // Task အဖြစ် သိမ်းဆည်းခြင်း
+                    const task = {
+                        id: "task-" + Date.now() + i, // Unique ID ဖြစ်စေရန် i ပေါင်းထည့်ခြင်း
+                        text: transcript,
+                        deadline: deadline,
+                        category: category,
+                        completed: false,
+                        remark: ""
+                    };
 
-        if (transcript.trim() !== "") {
-            const task = {
-                id: "task-" + Date.now(),
-                text: transcript,
-                deadline: deadline,
-                category: category,
-                completed: false,
-                remark: ""
-            };
-
-            saveTask(task);
-            renderAllTasks();
-            showToast("Task အသစ်ကို အသံဖြင့် ထည့်သွင်းပြီးပါပြီ။");
-            taskInput.value = ""; // Input ကို ပြန်ရှင်းထုတ်မယ်
+                    saveTask(task); //
+                    renderAllTasks(); //
+                    showToast(`"${transcript}" ကို ထည့်သွင်းပြီးပါပြီ။`);
+                }
+            }
         }
     };
 
     recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+        console.error("Speech error:", event.error);
+        isListening = false;
         startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-        alert("အသံဖမ်းယူမှု အဆင်မပြေပါ။ ပြန်ကြိုးစားကြည့်ပါ။");
+        startBtn.style.background = "#3498db";
     };
 
     recognition.onend = () => {
-        startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-        startBtn.style.background = "#3498db";
+        // အကယ်၍ Stop ခလုတ်မနှိပ်ဘဲ Error ကြောင့်ဖြစ်စေ၊ ခေတ္တရပ်သွားပါက ပြန်စစေချင်လျှင်
+        if (isListening) recognition.start();
     };
 } else {
     startBtn.style.display = "none"; // Browser က support မလုပ်ရင် ခလုတ်ဖျောက်ထားမယ်
