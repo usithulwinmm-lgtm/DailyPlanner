@@ -73,8 +73,14 @@ if (SpeechRecognition) {
     };
 
     recognition.onend = () => {
-        // အကယ်၍ Stop ခလုတ်မနှိပ်ဘဲ Error ကြောင့်ဖြစ်စေ၊ ခေတ္တရပ်သွားပါက ပြန်စစေချင်လျှင်
-        if (isListening) recognition.start();
+        // isListening က true ဖြစ်နေသေးရင် (User က ရပ်တန့်မည် ခလုတ်မနှိပ်သေးရင်) ပြန်စမယ်
+        if (isListening) {
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log("Recognition is already started or restarting...");
+            }
+        }
     };
 } else {
     startBtn.style.display = "none"; // Browser က support မလုပ်ရင် ခလုတ်ဖျောက်ထားမယ်
@@ -322,6 +328,19 @@ window.onload = () => {
 
     renderAllTasks();
     checkReminders();
+
+    // Microphone Permission ကို ကြိုတင်တောင်းထားခြင်း
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            console.log("Microphone access granted.");
+            // Stream ကို ပြန်ပိတ်ထားမယ် (နားထောင်တာ မဟုတ်ဘဲ Permission ယူရုံသက်သက်)
+            stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(function(err) {
+            console.log("Microphone access denied: " + err);
+        });
+    }
 };
 
 function renderAllTasks() {
