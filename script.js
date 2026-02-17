@@ -31,8 +31,25 @@ if (SpeechRecognition) {
         startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
         startBtn.style.background = "#3498db";
         
-        // အသံပြောပြီးတာနဲ့ Task ထဲ တန်းထည့်ချင်ရင် အောက်က line ကို သုံးနိုင်ပါတယ်
-        // addTask(); 
+        // --- အသံပြောပြီးတာနဲ့ Task ထဲ တန်းထည့်မည့် Logic ---
+        const deadline = document.getElementById('taskDeadline').value;
+        const category = document.getElementById('taskCategory').value;
+
+        if (transcript.trim() !== "") {
+            const task = {
+                id: "task-" + Date.now(),
+                text: transcript,
+                deadline: deadline,
+                category: category,
+                completed: false,
+                remark: ""
+            };
+
+            saveTask(task);
+            renderAllTasks();
+            showToast("Task အသစ်ကို အသံဖြင့် ထည့်သွင်းပြီးပါပြီ။");
+            taskInput.value = ""; // Input ကို ပြန်ရှင်းထုတ်မယ်
+        }
     };
 
     recognition.onerror = (event) => {
@@ -79,37 +96,6 @@ function saveTask(task) {
     let tasks = JSON.parse(localStorage.getItem('proTasks') || "[]");
     tasks.push(task);
     localStorage.setItem('proTasks', JSON.stringify(tasks));
-}
-
-// ၄။ Table ထဲမှာ ပြသခြင်း
-function renderTask(task) {
-    const tbody = document.getElementById(`${task.category}List`);
-    if (!tbody) return;
-
-    const tr = document.createElement('tr');
-    tr.id = task.id;
-    
-    const isChecked = task.completed ? 'checked' : '';
-    const textClass = task.completed ? 'completed-task' : '';
-    const rowCount = tbody.rows.length + 1;
-
-    tr.innerHTML = `
-        <td class="row-no">${rowCount}</td>
-        <td contenteditable="true" onblur="saveInlineEdit('${task.id}', this, 'text')" class="${textClass}">
-            <strong>${task.text}</strong>
-        </td>
-        <td contenteditable="true" onblur="saveInlineEdit('${task.id}', this, 'deadline')">${task.deadline || '-'}</td>
-        <td style="text-align:center;">
-            <input type="checkbox" class="status-checkbox" ${isChecked} onclick="toggleComplete('${task.id}')">
-        </td>
-        <td contenteditable="true" onblur="saveInlineEdit('${task.id}', this, 'remark')">
-            <small>${task.remark || ''}</small>
-        </td>
-        <td class="task-actions">
-            <span style="cursor:pointer; color: #ff4757;" onclick="deleteTask('${task.id}')">❌ Delete</span>
-        </td>
-    `;
-    tbody.appendChild(tr);
 }
 
 // ၅။ Inline Edit ပြုလုပ်ပြီး သိမ်းဆည်းခြင်း
@@ -183,23 +169,6 @@ function exportToPDF() {
     const element = document.querySelector('.task-board');
     html2pdf().from(element).save('My-Tasks.pdf');
 }
-
-// ၁၁။ Refresh လုပ်လျှင် Data ပြန်ခေါ်ခြင်း (အရေးကြီးဆုံးအပိုင်း)
-// window.onload ကို ဒီ code နဲ့ အစားထိုးပါ
-window.onload = () => {
-    if(localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
-        darkModeToggle.innerText = "☀️ Light Mode";
-    }
-    
-    // Notification ပေးခွင့် တောင်းခြင်း
-    if ("Notification" in window) {
-        Notification.requestPermission();
-    }
-
-    renderAllTasks();
-    checkReminders(); // Reminder စစ်ဆေးရန် ခေါ်ခြင်း
-};
 
 function showToast(message) {
     const toast = document.getElementById("toast");
@@ -320,4 +289,128 @@ function checkReminders() {
 
 // ၁ နာရီတစ်ခါ အလိုအလျောက် စစ်ဆေးစေချင်လျှင် (Optional)
 setInterval(checkReminders, 3600000);
+
+// --- ဤနေရာတွင် logic အသစ်များ အစားထိုးပါ ---
+
+window.onload = () => {
+    if(localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.innerText = "☀️ Light Mode";
+    }
+    
+    // ၁။ Deadline မှာ Today ကို Default ထားခြင်း
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('taskDeadline').value = today;
+
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
+
+    renderAllTasks();
+    checkReminders();
+};
+
+function renderAllTasks() {
+    const categories = ['daily', 'weekly', 'monthly', 'yearly'];
+    categories.forEach(cat => {
+        const listElement = document.getElementById(`${cat}List`);
+        if (listElement) {
+            listElement.innerHTML = "";
+            updateDashboard(cat);
+        }
+    });
+
+    const tasks = getAllTasks();
+    tasks.forEach((task) => {
+        const tbody = document.getElementById(`${task.category}List`);
+        if (!tbody) return;
+        
+        if(tbody.innerText === "Task မရှိသေးပါ။") tbody.innerHTML = "";
+
+        const tr = document.createElement('tr');
+        tr.id = task.id;
+        const urgentClass = checkDeadline(task.deadline);
+        
+        // Row ကို နှိပ်ရင် Modal ပွင့်စေဖို့
+        tr.onclick = (e) => {
+            // Checkbox ကို နှိပ်ရင် Modal မပွင့်စေဖို့ စစ်ဆေးခြင်း
+            if (e.target.type !== 'checkbox') {
+                openEditModal(task);
+            }
+        };
+
+        tr.innerHTML = `
+            <td style="text-align:center;">
+                <input type="checkbox" class="status-checkbox" ${task.completed ? 'checked' : ''} 
+                onclick="event.stopPropagation(); toggleComplete('${task.id}')">
+            </td>
+            <td class="${task.completed ? 'completed-task' : ''}">
+                <strong>${task.text}</strong>
+            </td>
+            <td class="${urgentClass}">
+                ${task.deadline || '-'}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// updateDashboard function ထဲမှ colspan ကို 3 သို့ပြောင်းရန် (Table column နည်းသွားသောကြောင့်)
+function updateDashboard(category) {
+    const tasks = JSON.parse(localStorage.getItem('proTasks') || "[]");
+    const catTasks = tasks.filter(t => t.category === category);
+    const tbody = document.getElementById(`${category}List`);
+    
+    if (catTasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px;">Task မရှိသေးပါ။</td></tr>`;
+    }
+
+    const completed = catTasks.filter(t => t.completed).length;
+    const percent = catTasks.length > 0 ? (completed / catTasks.length) * 100 : 0;
+    document.getElementById(`${category}Progress`).style.width = percent + "%";
+}
+
+const modal = document.getElementById('editModal');
+
+function openEditModal(task) {
+    document.getElementById('editTaskId').value = task.id;
+    document.getElementById('editTaskText').value = task.text;
+    document.getElementById('editTaskDeadline').value = task.deadline;
+    modal.style.display = "flex";
+}
+
+function closeModal() {
+    modal.style.display = "none";
+}
+
+// Modal အပြင်ဘက်ကို နှိပ်ရင် ပိတ်ဖို့
+window.onclick = (event) => {
+    if (event.target == modal) closeModal();
+};
+
+function updateTaskFromModal() {
+    const id = document.getElementById('editTaskId').value;
+    const newText = document.getElementById('editTaskText').value;
+    const newDeadline = document.getElementById('editTaskDeadline').value;
+
+    let tasks = JSON.parse(localStorage.getItem('proTasks'));
+    const index = tasks.findIndex(t => t.id === id);
+    
+    if (index !== -1) {
+        tasks[index].text = newText;
+        tasks[index].deadline = newDeadline;
+        localStorage.setItem('proTasks', JSON.stringify(tasks));
+        renderAllTasks();
+        closeModal();
+        showToast("ပြင်ဆင်ပြီးပါပြီ။");
+    }
+}
+
+function deleteTaskFromModal() {
+    const id = document.getElementById('editTaskId').value;
+    
+    // confirm မမေးတော့ဘဲ တန်းဖျက်မည်
+    deleteTask(id);
+    closeModal();
+}
 

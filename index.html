@@ -42,7 +42,7 @@
     <button onclick="filterCategory('yearly')" class="filter-btn">Yearly</button>
 </div>
 
-       <div class="task-board">
+      <div class="task-board">
     <div class="column-row" id="daily" style="display: block;">
         <h2>📅 နေ့စဉ် (Daily)</h2>
         <div class="progress-container"><div id="dailyProgress" class="progress-bar"></div></div>
@@ -50,12 +50,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">No.</th>
+                        <th style="width: 40px;">Status</th>
                         <th>Description</th>
-                        <th style="width: 100px;">Deadline</th>
-                        <th style="width: 80px;">Status</th>
-                        <th>Remark</th>
-                        <th style="width: 100px;">Actions</th>
+                        <th style="width: 120px;">Deadline</th>
                     </tr>
                 </thead>
                 <tbody id="dailyList"></tbody>
@@ -64,24 +61,21 @@
     </div>
 
     <div class="column-row" id="weekly" style="display: none;">
-    <h2>📅 အပတ်စဉ် (Weekly)</h2>
-    <div class="progress-container"><div id="weeklyProgress" class="progress-bar"></div></div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50px;">No.</th>
-                    <th>Description</th>
-                    <th style="width: 100px;">Deadline</th>
-                    <th style="width: 80px;">Status</th>
-                    <th>Remark</th>
-                    <th style="width: 100px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="weeklyList"></tbody>
-        </table>
+        <h2>📅 အပတ်စဉ် (Weekly)</h2>
+        <div class="progress-container"><div id="weeklyProgress" class="progress-bar"></div></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">Status</th>
+                        <th>Description</th>
+                        <th style="width: 120px;">Deadline</th>
+                    </tr>
+                </thead>
+                <tbody id="weeklyList"></tbody>
+            </table>
+        </div>
     </div>
-</div>
 
     <div class="column-row" id="monthly" style="display: none;">
         <h2>🗓️ တစ်လတာ (Monthly)</h2>
@@ -90,12 +84,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">No.</th>
+                        <th style="width: 40px;">Status</th>
                         <th>Description</th>
-                        <th style="width: 100px;">Deadline</th>
-                        <th style="width: 80px;">Status</th>
-                        <th>Remark</th>
-                        <th style="width: 100px;">Actions</th>
+                        <th style="width: 120px;">Deadline</th>
                     </tr>
                 </thead>
                 <tbody id="monthlyList"></tbody>
@@ -110,16 +101,32 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">No.</th>
+                        <th style="width: 40px;">Status</th>
                         <th>Description</th>
-                        <th style="width: 100px;">Deadline</th>
-                        <th style="width: 80px;">Status</th>
-                        <th>Remark</th>
-                        <th style="width: 100px;">Actions</th>
+                        <th style="width: 120px;">Deadline</th>
                     </tr>
                 </thead>
                 <tbody id="yearlyList"></tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Task ကို ပြင်ဆင်ရန်</h3>
+        <input type="hidden" id="editTaskId">
+        
+        <label>Description:</label>
+        <textarea id="editTaskText"></textarea>
+        
+        <label>Deadline:</label>
+        <input type="date" id="editTaskDeadline">
+        
+        <div class="modal-buttons">
+            <button onclick="updateTaskFromModal()" class="save-btn">💾 သိမ်းဆည်းမည်</button>
+            <button onclick="deleteTaskFromModal()" class="delete-btn">🗑️ ဖျက်မည်</button>
+            <button onclick="closeModal()" class="cancel-btn">ပိတ်မည်</button>
         </div>
     </div>
 </div>
