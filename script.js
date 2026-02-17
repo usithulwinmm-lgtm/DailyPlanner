@@ -22,32 +22,20 @@ if (SpeechRecognition) {
 
     let isListening = false;
 
-    let micStream;
-
-startBtn.onclick = async () => {
-    if (!isListening) {
-        try {
-            // မိုက်ခရိုဖုန်းကို အမြဲတမ်း Active ဖြစ်အောင် Stream တစ်ခု ဖွင့်ထားလိုက်ခြင်း
-            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
+    startBtn.onclick = () => {
+        if (!isListening) {
             recognition.start();
             isListening = true;
             startBtn.innerText = "🛑 ရပ်တန့်မည်";
             startBtn.style.background = "#ff4757";
-        } catch (err) {
-            console.error("Mic access failed", err);
+            showToast("စတင်နားထောင်နေပါပြီ... ပြောလိုသည်များကို ဆက်တိုက်ပြောနိုင်ပါသည်။");
+        } else {
+            recognition.stop();
+            isListening = false;
+            startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
+            startBtn.style.background = "#3498db";
         }
-    } else {
-        recognition.stop();
-        // ရပ်လိုက်တဲ့အခါ Stream ကို ပြန်ပိတ်ပေးရပါမယ်
-        if (micStream) {
-            micStream.getTracks().forEach(track => track.stop());
-        }
-        isListening = false;
-        startBtn.innerText = "🎤 အသံနဲ့ပြောမယ်";
-        startBtn.style.background = "#3498db";
-    }
-};
+    };
 
     recognition.onresult = (event) => {
         const deadline = document.getElementById('taskDeadline').value; //
@@ -85,10 +73,13 @@ startBtn.onclick = async () => {
     };
 
     recognition.onend = () => {
-        // User က Stop မနှိပ်သေးဘဲ Browser က အလိုလို ရပ်သွားမှသာ ပြန်စခိုင်းပါမယ်
+        // isListening က true ဖြစ်နေသေးရင် (User က ရပ်တန့်မည် ခလုတ်မနှိပ်သေးရင်) ပြန်စမယ်
         if (isListening) {
-            console.log("Recognition restart automatically...");
-            recognition.start();
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log("Recognition is already started or restarting...");
+            }
         }
     };
 } else {
